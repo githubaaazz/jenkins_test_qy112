@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--id和过滤器的名称匹配   拦截配置工厂-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!--设值注入 setter 注入-->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- override these for application-specific URLs if you like:-->
+        <!--未登录请求拦截后跳转的路径-->
+        <property name="loginUrl" value="/user/toLogin.do"/>
+        <!--登录成功跳转页面
+        successUrl配置只是做为一种附加配置，
+        只有session中没有用户请求地址时才会使用successUrl。
+        系统默认的是认证成功后跳转到上一次请求的路径，
+        如果是首次请求，那shiro就会跳转到默认虚拟路径“/”，
+        也就是跳转到index.jsp。-->
+        <property name="successUrl" value="/home.jsp"/>
+        <!--未授权时跳转的页面-->
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+        <!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
+        <!-- defined will be automatically acquired and available via its beanName in chain        -->
+        <!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
+        <!-- <property name="filters">
+            <util:map>
+                <entry key="anAlias" value-ref="someFilter"/>
+            </util:map>
+        </property> -->
+        <property name="filterChainDefinitions">
+            <value>
+                # 要放开的请求
+                /css/** = anon
+                /js/** = anon
+                /images/** = anon
+                /user/toLogin.do = anon
+                /user/login.do = anon
+                # 注销方法
+                /logOut = logout
+                # 除上面配置之外都要拦截  必须放在最下面
+                /** = authc
+            </value>
+        </property>
+    </bean>
+    <!--shiro的所有的bean交给spring管理-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+    <!--SecurityManager-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
+        <property name="realm" ref="myRealm"/>
+        <!-- By default the servlet container sessions will be used.  Uncomment this line
+             to use shiro's native sessions (see the JavaDoc for more): -->
+        <!-- <property name="sessionMode" value="native"/> -->
+    </bean>
+    <!--安全数据桥梁 myRealm-->
+    <bean id="myRealm" class="com.aaa.ssm.util.MyShiroRealm">
+       <!-- <property name="credentialsMatcher" ref="credentialsMatcher"></property>-->
+    </bean>
+    <!--加密和加盐类-->
+   <!-- <bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <property name="hashAlgorithmName" value="SHA-512"></property>
+        &lt;!&ndash;<property name="hashIterations" value="1"></property>&ndash;&gt;
+    </bean>-->
+</beans>
